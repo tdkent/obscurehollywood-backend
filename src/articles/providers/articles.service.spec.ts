@@ -91,7 +91,11 @@ describe('ArticlesService', () => {
       q: 'search',
     };
 
-    const articles: Partial<Article>[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
+    const articles: Partial<Article>[] = [
+      { id: 1, name: 'ABC' },
+      { id: 2, name: 'DEF' },
+      { id: 3, name: 'GHI' },
+    ];
 
     it('should call repository.createQueryBuilder() if search string is defined', async () => {
       await service.findAll(queryWithSearch);
