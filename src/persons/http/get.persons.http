@@ -4,6 +4,7 @@
 GET {{localBaseUrl}}/people
 ?page=1
 &orderBy=lastNameAsc
+&showAll=true
 
 ### Find recent people
 # GET /people/recent

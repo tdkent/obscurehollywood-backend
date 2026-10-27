@@ -24,7 +24,7 @@ export class PersonsService {
    * Send a list of persons with pagination and sorting.
    */
   public async findAll(reqQuery: GetPersonsDto) {
-    const { orderBy: orderParam, page: pageParam } = reqQuery;
+    const { orderBy: orderParam, page: pageParam, showAll } = reqQuery;
 
     const { orderBy, page } = validateParams({
       orderParam,
@@ -34,7 +34,7 @@ export class PersonsService {
 
     const [data, count] = await this.personsRepository.findAndCount({
       where: {
-        article: Not(IsNull()),
+        article: showAll !== 'true' && Not(IsNull()),
       },
       order:
         orderBy === 'lastNameDesc'
