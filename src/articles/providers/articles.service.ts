@@ -203,20 +203,22 @@ export class ArticlesService {
       articles = results
         .map((result) => {
           const nameLowercase = result.name.toLowerCase();
+          let weightedRank = result.rank;
 
           if (searchLowercase === nameLowercase) {
-            return { ...result, id: Number(result.id), rank: result.rank + 1 };
+            weightedRank = result.rank + 1;
+          } else if (nameLowercase.includes(searchLowercase)) {
+            weightedRank = result.rank + 0.5;
           }
 
-          if (nameLowercase.includes(searchLowercase)) {
-            return {
-              ...result,
-              id: Number(result.id),
-              rank: result.rank + 0.5,
-            };
-          }
-
-          return result;
+          return {
+            id: Number(result.id),
+            name: result.name,
+            rank: weightedRank,
+            slug: result.slug,
+            gender: result.gender,
+            category: result.category,
+          };
         })
         .sort((a, b) => b.rank - a.rank);
     }
