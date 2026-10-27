@@ -188,21 +188,39 @@ export class ArticlesService {
         .skip((page - 1) * PAGINATION_TAKE_COUNT)
         .getRawMany();
 
-      const results = searchResultsQb as (Partial<ArticleResponse> & {
+      const results = searchResultsQb as (Omit<
+        ArticleResponse,
+        'htmlContent'
+      > & {
+        rank: number;
         count: string;
       })[];
 
       totalItems = results.length ? Number(results[0].count) : 0;
 
-      articles = results.map((result) => {
-        return {
-          id: Number(result.id),
-          name: result.name,
-          slug: result.slug,
-          gender: result.gender,
-          category: result.category,
-        };
-      });
+      const searchLowercase = searchString.toLowerCase();
+
+      articles = results
+        .map((result) => {
+          const nameLowercase = result.name.toLowerCase();
+          let weightedRank = result.rank;
+
+          if (searchLowercase === nameLowercase) {
+            weightedRank = result.rank + 1;
+          } else if (nameLowercase.includes(searchLowercase)) {
+            weightedRank = result.rank + 0.5;
+          }
+
+          return {
+            id: Number(result.id),
+            name: result.name,
+            rank: weightedRank,
+            slug: result.slug,
+            gender: result.gender,
+            category: result.category,
+          };
+        })
+        .sort((a, b) => b.rank - a.rank);
     }
 
     const finalResponse = this.paginationProvider.createPaginationMetadata({
