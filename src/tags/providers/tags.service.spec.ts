@@ -3,7 +3,7 @@ import { TagsService } from 'src/tags/providers/tags.service';
 import { Repository } from 'typeorm';
 import { Tag } from 'src/tags/entities/tag.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { GetFilmsByTagDto } from 'src/tags/dto/get-tag.dto';
+import { GetFilmsByTagDto, GetTagsDto } from 'src/tags/dto/get-tag.dto';
 import { Film } from 'src/films/entities/film.entity';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
 
@@ -15,15 +15,15 @@ describe('TagsService', () => {
   };
 
   let repository: jest.Mocked<
-    Pick<Repository<Partial<Tag>>, 'find' | 'findOne'>
+    Pick<Repository<Partial<Tag>>, 'findAndCount' | 'findOne'>
   >;
   let filmRepository: jest.Mocked<
     Pick<Repository<Partial<Film>>, 'findAndCount'>
   >;
   const mockTagRepository: jest.Mocked<
-    Pick<Repository<Partial<Tag>>, 'find' | 'findOne'>
+    Pick<Repository<Partial<Tag>>, 'findAndCount' | 'findOne'>
   > = {
-    find: jest.fn(),
+    findAndCount: jest.fn(),
     findOne: jest.fn(),
   };
   const mockFilmRepository: jest.Mocked<
@@ -33,7 +33,7 @@ describe('TagsService', () => {
   };
 
   beforeEach(async () => {
-    mockTagRepository.find.mockResolvedValue([]);
+    mockTagRepository.findAndCount.mockResolvedValue([[], 0]);
     mockTagRepository.findOne.mockResolvedValue({ id: 1 });
     mockFilmRepository.findAndCount.mockResolvedValue([[], 0]);
 
@@ -69,14 +69,21 @@ describe('TagsService', () => {
   });
 
   describe('findAll', () => {
-    it('should call repository.find()', async () => {
-      await service.findAll();
-      expect(repository.find).toHaveBeenCalledTimes(1);
+    const query: GetTagsDto = { orderBy: 'nameAsc', page: '1' };
+
+    it('should call repository.findAndCount()', async () => {
+      await service.findAll(query);
+      expect(repository.findAndCount).toHaveBeenCalledTimes(1);
     });
 
     it('should return an empty array if no data can be found', async () => {
-      const data = await service.findAll();
-      expect(data).toEqual([]);
+      mockPaginationProvider.createPaginationMetadata.mockReturnValueOnce({
+        data: [],
+        links: {},
+        meta: {},
+      });
+      const result = await service.findAll(query);
+      expect(result.data).toEqual([]);
     });
   });
 
