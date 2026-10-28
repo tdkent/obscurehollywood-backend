@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Tag } from 'src/tags/entities/tag.entity';
-import { GetFilmsByTagDto } from 'src/tags/dto/get-tag.dto';
+import { GetFilmsByTagDto, GetTagsDto } from 'src/tags/dto/get-tag.dto';
 import { Film } from 'src/films/entities/film.entity';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
 import { validateParams } from 'src/common/utils/validate';
@@ -26,12 +26,29 @@ export class TagsService {
      */
     private paginationProvider: PaginationProvider,
   ) {}
-  public async findAll() {
-    const tags = await this.tagsRepository.find({
-      order: { type: 'ASC', name: 'ASC' },
+  public async findAll(reqQuery: GetTagsDto) {
+    const { orderBy: orderParam, page: pageParam } = reqQuery;
+
+    const { orderBy, page } = validateParams({
+      orderParam,
+      pageParam,
+      route: 'tags',
     });
 
-    return tags;
+    const [data, count] = await this.tagsRepository.findAndCount({
+      order: orderBy === 'nameAsc' ? { name: 'ASC' } : { name: 'DESC' },
+      take: PAGINATION_TAKE_COUNT,
+      skip: (page - 1) * PAGINATION_TAKE_COUNT,
+    });
+
+    const finalResponse = this.paginationProvider.createPaginationMetadata({
+      data,
+      orderBy,
+      page,
+      totalItems: count,
+    });
+
+    return finalResponse;
   }
 
   public async findOne(slug: string) {

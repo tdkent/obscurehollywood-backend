@@ -3,7 +3,8 @@ import * as z from 'zod';
 interface Inputs {
   orderParam: string;
   pageParam: string;
-  route: 'articles' | 'features' | 'films' | 'people' | 'quiz' | 'studios';
+  route:
+    'articles' | 'features' | 'films' | 'people' | 'quiz' | 'studios' | 'tags';
 }
 
 /** Validate and return coerced URL search params. */
@@ -28,7 +29,8 @@ export function validateParams({ route, pageParam, orderParam }: Inputs) {
     case 'articles':
     case 'features':
     case 'quiz':
-    case 'studios': {
+    case 'studios':
+    case 'tags': {
       const { success } = NameOrder.safeParse(orderParam);
       validOrder = success ? orderParam : 'nameAsc';
       break;
@@ -45,6 +47,9 @@ export function validateParams({ route, pageParam, orderParam }: Inputs) {
       validOrder = success ? orderParam : 'lastNameAsc';
       break;
     }
+
+    default:
+      throw new Error('Invalid route.');
   }
 
   const params = {
