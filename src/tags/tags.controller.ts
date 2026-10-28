@@ -10,7 +10,7 @@ import {
 import { SlugDto } from 'src/common/dtos/slug.dto';
 import { GetFilmsResponseDto } from 'src/films/dto/get-films-response.dto';
 import { GetTagResponseDto } from 'src/tags/dto/get-tag-response.dto';
-import { GetFilmsByTagDto } from 'src/tags/dto/get-tag.dto';
+import { GetFilmsByTagDto, GetTagsDto } from 'src/tags/dto/get-tag.dto';
 import { TagResponseDto } from 'src/tags/dto/tag-response.dto';
 import { TagsService } from 'src/tags/providers/tags.service';
 
@@ -28,8 +28,11 @@ export class TagsController {
     description: 'An array of tags or an empty array if no data can be found.',
     type: [TagResponseDto],
   })
-  findAll() {
-    return this.tagsService.findAll();
+  @ApiBadRequestResponse({
+    description: 'One or more query parameters are invalid.',
+  })
+  findAll(@Query() reqQuery: GetTagsDto) {
+    return this.tagsService.findAll(reqQuery);
   }
 
   @Get(':slug')
